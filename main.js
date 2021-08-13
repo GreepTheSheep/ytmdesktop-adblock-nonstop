@@ -8,6 +8,7 @@ const {
     Menu,
     ipcMain,
     systemPreferences,
+    Session,
     nativeTheme,
     screen,
     shell,
@@ -19,6 +20,12 @@ const ClipboardWatcher = require('electron-clipboard-watcher')
 const electronLocalshortcut = require('electron-localshortcut')
 const electronLog = require('electron-log')
 const os = require('os')
+const {
+    ElectronBlocker,
+    fullLists,
+    Request,
+} = require('@cliqz/adblocker-electron')
+const fetch = require('node-fetch')
 
 const { calcYTViewSize } = require('./src/utils/calcYTViewSize')
 const { isWindows, isMac, isLinux } = require('./src/utils/systemInfo')
@@ -139,7 +146,7 @@ if (settingsProvider.get('settings-disable-hardware-acceleration')) {
 }
 
 /* Functions ============================================================================= */
-function createWindow() {
+async function createWindow() {
     if (isMac() || isWindows()) {
         const execApp = path.basename(process.execPath)
         const startArgs = ['--processStart', `"${execApp}"`]
@@ -219,6 +226,36 @@ function createWindow() {
     }
 
     mainWindow = new BrowserWindow(browserWindowConfig)
+
+    const blocker = await ElectronBlocker.fromLists(fetch, fullLists, {
+        enableCompression: true,
+    })
+
+    blocker.enableBlockingInSession(mainWindow.webContents.session)
+
+    blocker.on('request-blocked', (request) => {
+        console.log('blocked', request.tabId, request.url)
+    })
+
+    blocker.on('request-redirected', (request) => {
+        console.log('redirected', request.tabId, request.url)
+    })
+
+    blocker.on('request-whitelisted', (request) => {
+        console.log('whitelisted', request.tabId, request.url)
+    })
+
+    blocker.on('csp-injected', (request) => {
+        console.log('csp', request.url)
+    })
+
+    blocker.on('script-injected', (script, url) => {
+        console.log('script', script.length, url)
+    })
+
+    blocker.on('style-injected', (style, url) => {
+        console.log('style', style.length, url)
+    })
 
     mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
         {
@@ -414,7 +451,7 @@ function createWindow() {
             if (settingsProvider.get('settings-last-fm-scrobbler')) {
                 if (
                     lastTrackId !== trackId ||
-                    (lastTrackProgress > progress && progress < 0.20)
+                    (lastTrackProgress > progress && progress < 0.2)
                 ) {
                     if (!trackInfo.isAdvertisement) {
                         clearInterval(updateTrackInfoTimeout)
@@ -1215,8 +1252,7 @@ function createWindow() {
                 './src/pages/shared/window-buttons/window-buttons.html'
             ),
             {
-                search:
-                    'page=settings/sub/last-fm/last-fm-login&icon=music_note&hide=btn-minimize,btn-maximize&title=Last.FM Login',
+                search: 'page=settings/sub/last-fm/last-fm-login&icon=music_note&hide=btn-minimize,btn-maximize&title=Last.FM Login',
             }
         )
     }
@@ -1246,8 +1282,7 @@ function createWindow() {
                 './src/pages/shared/window-buttons/window-buttons.html'
             ),
             {
-                search:
-                    'page=editor/editor&icon=color_lens&hide=btn-minimize,btn-maximize',
+                search: 'page=editor/editor&icon=color_lens&hide=btn-minimize,btn-maximize',
             }
         )
     }
@@ -1610,7 +1645,8 @@ function createWindow() {
                 clipboardWatcher = ClipboardWatcher({
                     watchDelay: 1000,
                     onTextChange: (text) => {
-                        let regExp = /(https?:\/\/)(www.)?(music.youtube|youtube|youtu.be).*/
+                        let regExp =
+                            /(https?:\/\/)(www.)?(music.youtube|youtube|youtu.be).*/
                         let match = text.match(regExp)
                         if (match) {
                             let videoUrl = match[0]
@@ -1656,7 +1692,8 @@ function createWindow() {
         if (videoUrl.includes('music.youtube')) {
             view.webContents.loadUrl(videoUrl)
         } else {
-            let regExpYoutube = /^.*(https?:\/\/)?(www.)?(music.youtube|youtube|youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\?v=)([^#\&\?]*).*/
+            let regExpYoutube =
+                /^.*(https?:\/\/)?(www.)?(music.youtube|youtube|youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\?v=)([^#\&\?]*).*/
             let match = videoUrl.match(regExpYoutube)
             view.webContents.loadURL(
                 'https://music.youtube.com/watch?v=' + match[4]
