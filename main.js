@@ -20,12 +20,21 @@ const ClipboardWatcher = require('electron-clipboard-watcher')
 const electronLocalshortcut = require('electron-localshortcut')
 const electronLog = require('electron-log')
 const os = require('os')
+
+// Adblock
 const {
     ElectronBlocker,
     fullLists,
     Request,
 } = require('@cliqz/adblocker-electron')
 const fetch = require('node-fetch')
+
+// Autoconfirm (non-stop)
+const fs = require('fs')
+const autoConfirm = fs.readFileSync(
+    path.join(__dirname, 'src', 'utils', 'nonstop', 'autoconfirm.js'),
+    'utf8'
+)
 
 const { calcYTViewSize } = require('./src/utils/calcYTViewSize')
 const { isWindows, isMac, isLinux } = require('./src/utils/systemInfo')
@@ -373,6 +382,7 @@ async function createWindow() {
     view.webContents.on('media-started-playing', function () {
         if (!infoPlayerProvider.hasInitialized()) {
             infoPlayerProvider.init(view)
+            view.webContents.executeJavaScript(autoConfirm)
             if (isLinux()) {
                 mprisProvider.setRealPlayer(infoPlayerProvider) //this lets us keep track of the current time in playback.
             }
