@@ -30,7 +30,6 @@
     "devDependencies": {
         "electron": "^10.1.1",
         "electron-builder": "^22.8.0",
-        "electron-rebuild": "^2.0.1",
         "husky": "^4.2.5",
         "prettier": "^2.0.5",
         "pretty-quick": "^2.0.1"
@@ -55,7 +54,6 @@
         "node-fetch": "^2.6.0",
         "node-vibrant": "^3.1.5",
         "qrcode-generator": "^1.4.4",
-        "register-scheme": "0.0.2",
         "scribble": "0.0.5",
         "socket.io": "^2.3.0",
         "uuid": "^8.3.0",
@@ -66,8 +64,6 @@
         "@nodert-win10/windows.media": "^0.2.96",
         "@nodert-win10/windows.media.playback": "^0.2.96",
         "@nodert-win10/windows.storage.streams": "^0.2.96",
-        "bufferutil": "^4.0.1",
-        "mpris-service": "^2.1.0",
-        "utf-8-validate": "^5.0.2"
+        "mpris-service": "^2.1.0"
     }
 }
