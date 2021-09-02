@@ -117,7 +117,6 @@ if (settingsProvider.get('has-updated') == true) {
 
 if (
     isWindows() &&
-    os.release().startsWith('10.') &&
     settingsProvider.get('settings-windows10-media-service')
 ) {
     try {
@@ -390,7 +389,6 @@ async function createWindow() {
 
         if (
             isWindows() &&
-            os.release().startsWith('10.') &&
             settingsProvider.get('settings-windows10-media-service') &&
             windowsMediaProvider != undefined
         ) {
@@ -541,7 +539,6 @@ async function createWindow() {
 
                 if (
                     isWindows() &&
-                    os.release().startsWith('10.') &&
                     settingsProvider.get('settings-windows10-media-service') &&
                     windowsMediaProvider != undefined
                 ) {
@@ -578,7 +575,6 @@ async function createWindow() {
 
                 if (
                     isWindows() &&
-                    os.release().startsWith('10.') &&
                     settingsProvider.get('settings-windows10-media-service') &&
                     windowsMediaProvider != undefined
                 ) {
